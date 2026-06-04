@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
+  <rect width="900" height="1100" fill="#EAF1FF"/>
+  <circle cx="700" cy="160" r="220" fill="url(#g)" opacity=".25"/>
+  <circle cx="220" cy="900" r="260" fill="#2563EB" opacity=".16"/>
+  <circle cx="450" cy="355" r="150" fill="#0F172A"/>
+  <rect x="195" y="560" width="510" height="360" rx="180" fill="#0F172A"/>
+  <rect x="260" y="760" width="380" height="70" rx="35" fill="url(#g)"/>
+  <text x="450" y="985" text-anchor="middle" font-family="Arial" font-size="42" font-weight="700" fill="#0F172A">Mohammad Saud</text>
+  <text x="450" y="1045" text-anchor="middle" font-family="Arial" font-size="28" fill="#475569">Android App Developer</text>
+</svg>
