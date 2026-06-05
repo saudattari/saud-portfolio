@@ -123,13 +123,14 @@ export default function AdminDashboard() {
   }
 
   function handleEdit(project) {
-    setProjectForm({
-      ...project,
-      screenshots: (project.screenshots || []).join("\n"),
-      technologies: (project.technologies || []).join("\n"),
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  setProjectForm({
+    ...project,
+    screenshots: normalizeMultiline(project.screenshots).join("\n"),
+    technologies: normalizeMultiline(project.technologies).join("\n"),
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
   async function uploadProfilePhoto(e) {
     const file = e.target.files?.[0];
@@ -260,24 +261,72 @@ export default function AdminDashboard() {
           <div className="grid lg:grid-cols-2 gap-6">
 
             {/* FORM */}
-            <form onSubmit={handleProjectSave} className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-              <SectionTitle title="Add / Edit Project" />
+            {/* FORM */}
+<form onSubmit={handleProjectSave} className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+  <SectionTitle title="Add / Edit Project" />
 
-              <Input label="Title" value={projectForm.title} onChange={(v) => setProjectForm({ ...projectForm, title: v })} />
-              <Input label="Category" value={projectForm.category} onChange={(v) => setProjectForm({ ...projectForm, category: v })} />
-              <Input label="Link" value={projectForm.appLink} onChange={(v) => setProjectForm({ ...projectForm, appLink: v })} />
+  <Input
+    label="Title"
+    value={projectForm.title}
+    onChange={(v) => setProjectForm({ ...projectForm, title: v })}
+  />
 
-              <FileInput label="Header Image" onChange={uploadHeader} />
+  <Input
+    label="Category"
+    value={projectForm.category}
+    onChange={(v) => setProjectForm({ ...projectForm, category: v })}
+  />
 
-              <TextArea label="Short Description" value={projectForm.shortDescription} onChange={(v) => setProjectForm({ ...projectForm, shortDescription: v })} />
-              <TextArea label="Description" value={projectForm.description} onChange={(v) => setProjectForm({ ...projectForm, description: v })} />
+  {/* ✅ FIXED: Project URL / Play Store */}
+  <Input
+    label="Project URL (Play Store / Website / GitHub)"
+    value={projectForm.appLink}
+    onChange={(v) => setProjectForm({ ...projectForm, appLink: v })}
+    placeholder="https://play.google.com/store/apps/... or https://github.com/..."
+  />
 
-              <FileInput label="Screenshots" multiple onChange={uploadScreenshots} />
+  <FileInput label="Header Image" onChange={uploadHeader} />
 
-              <button className="btn-dark flex items-center gap-2">
-                <Plus size={18} /> Save Project
-              </button>
-            </form>
+  <TextArea
+    label="Short Description"
+    value={projectForm.shortDescription}
+    onChange={(v) => setProjectForm({ ...projectForm, shortDescription: v })}
+  />
+
+  <TextArea
+    label="Description"
+    value={projectForm.description}
+    onChange={(v) => setProjectForm({ ...projectForm, description: v })}
+  />
+
+  {/* ✅ FIXED: Technologies */}
+  <TextArea
+    label="Technologies (comma or line separated)"
+    value={projectForm.technologies}
+    onChange={(v) => setProjectForm({ ...projectForm, technologies: v })}
+    placeholder="Kotlin, Jetpack Compose, Firebase, Room DB"
+  />
+
+  {/* 🔥 TECH PREVIEW (chips UI) */}
+  {projectForm.technologies && (
+    <div className="flex flex-wrap gap-2">
+      {normalizeMultiline(projectForm.technologies).map((tech, i) => (
+        <span
+          key={i}
+          className="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 border"
+        >
+          {tech}
+        </span>
+      ))}
+    </div>
+  )}
+
+  <FileInput label="Screenshots" multiple onChange={uploadScreenshots} />
+
+  <button className="btn-dark flex items-center gap-2">
+    <Plus size={18} /> Save Project
+  </button>
+</form>
 
             {/* LIST */}
             <div className="space-y-4">
