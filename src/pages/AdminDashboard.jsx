@@ -1,21 +1,26 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
+  ImagePlus,
   LogOut,
-  Save,
-  Plus,
-  Trash2,
   PencilLine,
+  Plus,
+  Save,
+  Trash2,
+  UploadCloud,
   UserRound,
+  LayoutDashboard,
+  FolderPlus,
+  User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { defaultProfile, demoAdmin } from "../data/defaultData";
 import {
   removeProject,
   saveProfile,
   saveProject,
   slugify,
+  uploadFile,
 } from "../services/dataService";
 import { auth, hasFirebaseConfig } from "../services/firebase";
 import { hasCloudinaryConfig } from "../services/cloudinary";
@@ -36,8 +41,6 @@ const emptyProject = {
   featured: true,
 };
 
-/* ===================== MAIN DASHBOARD ===================== */
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const profile = useProfile();
@@ -46,11 +49,15 @@ export default function AdminDashboard() {
   const [profileForm, setProfileForm] = useState(defaultProfile);
   const [projectForm, setProjectForm] = useState(emptyProject);
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   useEffect(() => {
     if (!hasFirebaseConfig) {
-      const ok = localStorage.getItem(DEMO_AUTH_KEY) === "true";
-      if (!ok) navigate("/admin");
+      const isLoggedIn = localStorage.getItem(DEMO_AUTH_KEY) === "true";
+      if (!isLoggedIn) navigate("/admin");
       return;
     }
 
@@ -59,7 +66,14 @@ export default function AdminDashboard() {
     });
   }, [navigate]);
 
-  useEffect(() => setProfileForm(profile), [profile]);
+  useEffect(() => {
+    setProfileForm(profile);
+  }, [profile]);
+
+  const previewScreens = useMemo(
+    () => normalizeMultiline(projectForm.screenshots),
+    [projectForm.screenshots]
+  );
 
   async function logout() {
     if (!hasFirebaseConfig) {
@@ -71,274 +85,307 @@ export default function AdminDashboard() {
     navigate("/admin");
   }
 
-  async function saveProfileData(e) {
+  async function handleProfileSave(e) {
     e.preventDefault();
+    setError("");
     setStatus("Saving profile...");
-    await saveProfile(profileForm);
-    setStatus("Profile updated successfully");
+    try {
+      await saveProfile(profileForm);
+      setStatus("Profile updated successfully.");
+    } catch (err) {
+      setError(err?.message || "Failed to save profile.");
+      setStatus("");
+    }
   }
 
-  async function saveProjectData(e) {
+  async function handleProjectSave(e) {
     e.preventDefault();
+    setError("");
     setStatus("Saving project...");
-
-    await saveProject({
-      ...projectForm,
-      id: projectForm.id || slugify(projectForm.title),
-    });
-
-    setProjectForm(emptyProject);
-    setStatus("Project saved successfully");
+    try {
+      await saveProject({
+        ...projectForm,
+        id: projectForm.id || slugify(projectForm.title),
+      });
+      setProjectForm(emptyProject);
+      setStatus("Project saved successfully.");
+    } catch (err) {
+      setError(err?.message || "Failed to save project.");
+      setStatus("");
+    }
   }
 
-  async function deleteProject(id) {
-    if (!confirm("Delete this project permanently?")) return;
+  async function handleRemove(id) {
+    const ok = window.confirm("Delete this project?");
+    if (!ok) return;
     await removeProject(id);
-    setStatus("Project deleted");
+    setStatus("Project deleted.");
   }
 
-  const preview = projectForm;
+  function handleEdit(project) {
+    setProjectForm({
+      ...project,
+      screenshots: (project.screenshots || []).join("\n"),
+      technologies: (project.technologies || []).join("\n"),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function uploadProfilePhoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const url = await uploadFile(file, "profile");
+    setProfileForm((p) => ({ ...p, photoUrl: url }));
+    setIsUploading(false);
+  }
+
+  async function uploadHeader(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const url = await uploadFile(file, "project-headers");
+    setProjectForm((p) => ({ ...p, headerImage: url }));
+    setIsUploading(false);
+  }
+
+  async function uploadScreenshots(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setIsUploading(true);
+
+    const urls = [];
+    for (const file of files) {
+      urls.push(await uploadFile(file, "project-screenshots"));
+    }
+
+    setProjectForm((p) => ({
+      ...p,
+      screenshots: [...normalizeMultiline(p.screenshots), ...urls].join("\n"),
+    }));
+
+    setIsUploading(false);
+  }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex">
 
-      {/* ================= TOP BAR ================= */}
-      <div className="flex items-center justify-between border-b bg-white px-6 py-3">
+      {/* SIDEBAR */}
+      <aside className="w-72 bg-white border-r border-slate-200 p-6 hidden md:flex flex-col justify-between">
         <div>
-          <h1 className="text-lg font-bold">Admin Dashboard</h1>
-          <p className="text-xs text-slate-500">
-            Portfolio Management System
-          </p>
+          <h1 className="text-xl font-black text-slate-900">
+            Portfolio Admin
+          </h1>
+
+          <nav className="mt-8 space-y-2">
+            <SidebarItem
+              icon={<LayoutDashboard size={18} />}
+              label="Dashboard"
+              active={activeTab === "dashboard"}
+              onClick={() => setActiveTab("dashboard")}
+            />
+            <SidebarItem
+              icon={<User size={18} />}
+              label="Profile"
+              active={activeTab === "profile"}
+              onClick={() => setActiveTab("profile")}
+            />
+            <SidebarItem
+              icon={<FolderPlus size={18} />}
+              label="Projects"
+              active={activeTab === "projects"}
+              onClick={() => setActiveTab("projects")}
+            />
+          </nav>
         </div>
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+          className="flex items-center gap-2 text-red-600 font-bold"
         >
-          <LogOut size={16} />
-          Logout
+          <LogOut size={18} /> Logout
         </button>
-      </div>
+      </aside>
 
-      {/* ================= MAIN AREA ================= */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* MAIN */}
+      <main className="flex-1 p-6 md:p-10">
 
-        {/* ========== LEFT PANEL ========== */}
-        <div className="w-72 border-r bg-white p-4 space-y-5">
-
-          <SectionTitle>System Status</SectionTitle>
-
-          <Info label="Mode" value={hasFirebaseConfig ? "Live" : "Demo"} />
-          <Info label="Storage" value={hasCloudinaryConfig ? "Cloudinary" : "Local"} />
-          <Info label="Admin Email" value={demoAdmin.email} />
-
-          <div className="pt-4 border-t space-y-2">
-            <SectionTitle>Quick Actions</SectionTitle>
-
-            <button className="btn-soft w-full">+ New Project</button>
-            <button className="btn-soft w-full">Edit Profile</button>
-          </div>
-
-        </div>
-
-        {/* ========== CENTER WORKSPACE ========== */}
-        <div className="flex-1 overflow-auto p-6 space-y-6">
-
-          {/* ===== PROFILE EDITOR ===== */}
-          <Panel title="Profile Editor" icon={<UserRound size={16} />}>
-            <Section title="Identity">
-              <Grid>
-                <Field label="Name" value={profileForm.name}
-                  onChange={(v) => setProfileForm({ ...profileForm, name: v })} />
-
-                <Field label="Role" value={profileForm.role}
-                  onChange={(v) => setProfileForm({ ...profileForm, role: v })} />
-              </Grid>
-            </Section>
-
-            <Section title="Contact">
-              <Grid>
-                <Field label="Email" value={profileForm.email}
-                  onChange={(v) => setProfileForm({ ...profileForm, email: v })} />
-
-                <Field label="Form Receiver" value={profileForm.formReceiver}
-                  onChange={(v) => setProfileForm({ ...profileForm, formReceiver: v })} />
-              </Grid>
-            </Section>
-
-            <Section title="Bio">
-              <textarea
-                className="field h-28"
-                value={profileForm.description}
-                onChange={(e) =>
-                  setProfileForm({ ...profileForm, description: e.target.value })
-                }
-              />
-            </Section>
-
-            <button onClick={saveProfileData} className="btn-primary mt-4">
-              <Save size={16} /> Save Profile
-            </button>
-          </Panel>
-
-          {/* ===== PROJECT EDITOR ===== */}
-          <Panel title="Project Editor" icon={<PencilLine size={16} />}>
-            <Grid>
-              <Field label="Title" value={projectForm.title}
-                onChange={(v) => setProjectForm({ ...projectForm, title: v })} />
-
-              <Field label="Category" value={projectForm.category}
-                onChange={(v) => setProjectForm({ ...projectForm, category: v })} />
-            </Grid>
-
-            <Grid>
-              <Field label="Project Link" value={projectForm.appLink}
-                onChange={(v) => setProjectForm({ ...projectForm, appLink: v })} />
-
-              <Field label="Header Image" value={projectForm.headerImage}
-                onChange={(v) => setProjectForm({ ...projectForm, headerImage: v })} />
-            </Grid>
-
-            <Section title="Description">
-              <textarea
-                className="field h-24"
-                value={projectForm.shortDescription}
-                onChange={(e) =>
-                  setProjectForm({
-                    ...projectForm,
-                    shortDescription: e.target.value,
-                  })
-                }
-              />
-            </Section>
-
-            <button onClick={saveProjectData} className="btn-dark mt-4">
-              <Plus size={16} /> Save Project
-            </button>
-          </Panel>
-
-        </div>
-
-        {/* ========== RIGHT INSPECTOR ========== */}
-        <div className="w-80 border-l bg-white p-4 space-y-4">
-
-          <SectionTitle>Live Preview</SectionTitle>
-
-          {preview.headerImage && (
-            <img
-              src={preview.headerImage}
-              className="rounded-xl border object-cover"
-            />
-          )}
-
-          <div className="space-y-1">
-            <p className="font-bold">{preview.title || "Project Title"}</p>
-            <p className="text-xs text-slate-500">{preview.category}</p>
-            <p className="text-sm text-slate-600">
-              {preview.shortDescription}
+        {/* TOP BAR */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900">
+              {activeTab === "dashboard" && "Dashboard"}
+              {activeTab === "profile" && "Profile Settings"}
+              {activeTab === "projects" && "Project Manager"}
+            </h2>
+            <p className="text-slate-500 text-sm mt-1">
+              Manage your portfolio content professionally
             </p>
           </div>
+        </div>
 
-          <div className="border-t pt-3">
-            <SectionTitle>Status</SectionTitle>
-            <p className="text-xs text-slate-500">{status}</p>
+        {status && <Alert type="info" text={status} />}
+        {error && <Alert type="error" text={error} />}
+        {isUploading && <Alert type="warning" text="Uploading files..." />}
+
+        {/* DASHBOARD */}
+        {activeTab === "dashboard" && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <InfoCard title="Data Mode" value={hasFirebaseConfig ? "Firebase Live" : "Demo Mode"} />
+            <InfoCard title="Image Upload" value={hasCloudinaryConfig ? "Cloudinary ON" : "Manual Mode"} />
+            <InfoCard title="Demo Email" value={demoAdmin.email} />
+            <InfoCard title="Demo Password" value={demoAdmin.password} />
           </div>
+        )}
 
-        </div>
+        {/* PROFILE */}
+        {activeTab === "profile" && (
+          <form onSubmit={handleProfileSave} className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+            <SectionTitle title="Profile Information" />
 
-      </div>
+            <Input label="Name" value={profileForm.name} onChange={(v) => setProfileForm({ ...profileForm, name: v })} />
+            <Input label="Role" value={profileForm.role} onChange={(v) => setProfileForm({ ...profileForm, role: v })} />
+            <Input label="Email" value={profileForm.email} onChange={(v) => setProfileForm({ ...profileForm, email: v })} />
 
-      {/* ========== DATABASE TABLE ========== */}
-      <div className="border-t bg-white p-5">
+            <FileInput label="Profile Image" onChange={uploadProfilePhoto} />
 
-        <SectionTitle>Projects Database</SectionTitle>
+            <button className="btn-primary flex items-center gap-2">
+              <Save size={18} /> Save Profile
+            </button>
+          </form>
+        )}
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 mt-4">
+        {/* PROJECTS */}
+        {activeTab === "projects" && (
+          <div className="grid lg:grid-cols-2 gap-6">
 
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-3 border rounded-lg p-3"
-            >
-              <img
-                src={p.headerImage}
-                className="h-10 w-10 rounded object-cover"
-              />
+            {/* FORM */}
+            <form onSubmit={handleProjectSave} className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
+              <SectionTitle title="Add / Edit Project" />
 
-              <div className="flex-1">
-                <p className="font-bold text-sm">{p.title}</p>
-                <p className="text-xs text-slate-500">{p.category}</p>
-              </div>
+              <Input label="Title" value={projectForm.title} onChange={(v) => setProjectForm({ ...projectForm, title: v })} />
+              <Input label="Category" value={projectForm.category} onChange={(v) => setProjectForm({ ...projectForm, category: v })} />
+              <Input label="Link" value={projectForm.appLink} onChange={(v) => setProjectForm({ ...projectForm, appLink: v })} />
 
-              <button
-                onClick={() => deleteProject(p.id)}
-                className="text-red-500"
-              >
-                <Trash2 size={16} />
+              <FileInput label="Header Image" onChange={uploadHeader} />
+
+              <TextArea label="Short Description" value={projectForm.shortDescription} onChange={(v) => setProjectForm({ ...projectForm, shortDescription: v })} />
+              <TextArea label="Description" value={projectForm.description} onChange={(v) => setProjectForm({ ...projectForm, description: v })} />
+
+              <FileInput label="Screenshots" multiple onChange={uploadScreenshots} />
+
+              <button className="btn-dark flex items-center gap-2">
+                <Plus size={18} /> Save Project
               </button>
+            </form>
+
+            {/* LIST */}
+            <div className="space-y-4">
+              {projects.map((p) => (
+                <div key={p.id} className="bg-white border rounded-2xl p-4 shadow-sm">
+                  <img src={p.headerImage} className="h-40 w-full object-cover rounded-xl" />
+
+                  <h3 className="font-bold mt-3">{p.title}</h3>
+                  <p className="text-sm text-slate-500">{p.category}</p>
+
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => handleEdit(p)} className="btn-outline">
+                      <PencilLine size={14} /> Edit
+                    </button>
+                    <button onClick={() => handleRemove(p.id)} className="text-red-600 font-bold">
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
 
-        </div>
-      </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
 
-/* ================= UI SYSTEM ================= */
+/* ---------------- UI COMPONENTS ---------------- */
 
-function Panel({ title, icon, children }) {
+function SidebarItem({ icon, label, active, onClick }) {
   return (
-    <div className="border rounded-xl bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-2 font-bold mb-3">
-        {icon} {title}
-      </div>
-      {children}
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-3 w-full px-4 py-2 rounded-xl text-sm font-bold transition ${
+        active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function SectionTitle({ title }) {
+  return <h3 className="text-lg font-black text-slate-900">{title}</h3>;
+}
+
+function Alert({ type, text }) {
+  const color =
+    type === "error"
+      ? "bg-red-50 text-red-600"
+      : type === "warning"
+      ? "bg-amber-50 text-amber-700"
+      : "bg-blue-50 text-blue-600";
+
+  return <div className={`p-3 rounded-xl mb-4 font-bold text-sm ${color}`}>{text}</div>;
+}
+
+function InfoCard({ title, value }) {
+  return (
+    <div className="bg-white border rounded-2xl p-5 shadow-sm">
+      <p className="text-xs font-bold text-slate-400">{title}</p>
+      <p className="text-lg font-black mt-2">{value}</p>
     </div>
   );
 }
 
-function Section({ title, children }) {
+function Input({ label, value, onChange }) {
   return (
-    <div className="mb-4">
-      <p className="text-xs font-bold text-slate-500 uppercase mb-2">
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
-
-function Grid({ children }) {
-  return <div className="grid grid-cols-2 gap-3">{children}</div>;
-}
-
-function Field({ label, value, onChange }) {
-  return (
-    <div>
-      <label className="text-xs text-slate-500">{label}</label>
+    <label className="block text-sm font-bold">
+      {label}
       <input
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="field"
+        className="w-full mt-1 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300"
       />
-    </div>
+    </label>
   );
 }
 
-function Info({ label, value }) {
+function TextArea({ label, value, onChange }) {
   return (
-    <div className="border rounded-lg p-2">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-sm font-bold">{value}</p>
-    </div>
+    <label className="block text-sm font-bold">
+      {label}
+      <textarea
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full mt-1 p-3 border rounded-xl min-h-[100px]"
+      />
+    </label>
   );
 }
 
-function SectionTitle({ children }) {
+function FileInput({ label, onChange, multiple }) {
   return (
-    <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wider">
-      {children}
-    </h3>
+    <label className="block text-sm font-bold">
+      {label}
+      <input type="file" multiple={multiple} onChange={onChange} className="mt-2" />
+    </label>
   );
+}
+
+function normalizeMultiline(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value || "")
+    .split("\n")
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
