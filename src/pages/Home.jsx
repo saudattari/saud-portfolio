@@ -44,147 +44,218 @@ export default function Home() {
   const featured = projects.filter((item) => item.featured).slice(0, 3);
 
   return (
-    <>
-      <section className="relative overflow-hidden bg-hero-radial grid-fade py-14 md:py-20">
-        <div className="hero-ring left-[-40px] top-[140px] h-52 w-52 bg-indigo-300" />
-        <div className="hero-ring right-[12%] top-[90px] h-56 w-56 bg-cyan-200" />
-        <div className="container-custom relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/90 px-4 py-2 text-sm font-bold text-primary shadow-soft">
-              <Rocket size={16} /> Available for Android app development projects
+    <div className="relative overflow-hidden">
+
+      {/* 🌈 BACKGROUND 3D ORBS */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 -left-32 h-[400px] w-[400px] rounded-full bg-purple-300 blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute top-40 right-0 h-[350px] w-[350px] rounded-full bg-cyan-300 blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-pink-300 blur-3xl opacity-20 animate-pulse" />
+      </div>
+
+      {/* ================= HERO ================= */}
+      <section className="relative py-24 md:py-28">
+        <div className="container-custom grid lg:grid-cols-2 items-center gap-14">
+
+          {/* LEFT */}
+          <div className="relative z-10">
+
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur px-5 py-2 border shadow-sm">
+              <Rocket size={16} className="text-primary" />
+              <span className="text-sm font-bold text-slate-700">
+                Available for Android Development
+              </span>
             </div>
 
-            <h1 className="mt-6 text-balance text-4xl font-black leading-tight text-ink md:text-6xl">
-              {profile.name}
-              <span className="mt-3 block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {profile.role}
+            <h1 className="mt-6 text-5xl md:text-6xl font-black leading-tight">
+              Hi, I'm{" "}
+              <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent animate-pulse">
+                {profile.name}
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            <h2 className="mt-3 text-2xl md:text-3xl font-bold text-slate-700">
+              {profile.role}
+            </h2>
+
+            <p className="mt-6 text-lg text-slate-600 leading-8 max-w-xl">
               {profile.description}
             </p>
 
+            {/* BUTTONS */}
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/projects" className="btn-primary">
-                Explore Projects <ArrowRight size={18} />
+              <Link
+                to="/projects"
+                className="px-6 py-3 rounded-full bg-black text-white font-bold hover:scale-105 transition"
+              >
+                Explore Projects →
               </Link>
-              <Link to="/admin" className="btn-outline">
-                Open Admin Dashboard
+
+              <Link
+                to="/admin"
+                className="px-6 py-3 rounded-full border border-slate-300 bg-white/60 backdrop-blur font-bold hover:scale-105 transition"
+              >
+                Admin Panel
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <StatCard value={profile.years} label="Experience" />
-              <StatCard value={profile.apps} label="Apps Built" />
-              <StatCard value={profile.clients} label="Clients" />
+            {/* STATS */}
+            <div className="mt-10 grid grid-cols-3 gap-4">
+              <GlassStat value={profile.years} label="Years" />
+              <GlassStat value={profile.apps} label="Apps" />
+              <GlassStat value={profile.clients} label="Clients" />
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -left-4 top-10 hidden h-36 w-36 rounded-[34px] bg-white/85 p-4 shadow-soft backdrop-blur md:block">
-              <div className="mock-icon h-full w-full text-primary">
-                <LayoutPanelTop size={46} />
-              </div>
-            </div>
-            <div className="absolute -right-4 bottom-10 hidden h-36 w-36 rounded-[34px] bg-white/85 p-4 shadow-soft backdrop-blur md:block">
-              <div className="mock-icon h-full w-full text-cyan-500">
-                <BriefcaseBusiness size={46} />
-              </div>
+          {/* RIGHT IMAGE CARD */}
+          <div className="relative z-10">
+
+            {/* FLOATING BADGES */}
+            <div className="absolute -top-10 left-10 glass-floating">
+              <Smartphone size={28} />
             </div>
 
-            <div className="relative rounded-[42px] border border-white/80 bg-white/80 p-4 shadow-card backdrop-blur">
+            <div className="absolute bottom-10 -right-6 glass-floating">
+              <Code2 size={28} />
+            </div>
+
+            {/* PROFILE IMAGE CARD */}
+            <div className="rounded-[40px] p-3 bg-white/30 backdrop-blur-xl border shadow-2xl hover:scale-[1.02] transition duration-500">
               <img
                 src={profile.photoUrl}
-                alt={profile.name}
-                className="h-[560px] w-full rounded-[34px] object-cover"
+                className="rounded-[34px] h-[520px] w-full object-cover"
               />
-              <div className="absolute bottom-8 left-8 right-8 rounded-[28px] border border-white/80 bg-white/85 p-5 shadow-soft backdrop-blur">
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Main Stack</p>
-                <p className="mt-2 text-xl font-black text-ink">Kotlin • XML • Jetpack Compose • Firebase • REST APIs</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="py-20">
-        <div className="container-custom">
-          <SectionTitle
-            label="Core Skills"
-            title="Everything needed to build premium Android applications"
-            description="This portfolio includes modern Android technologies, clean UI implementation, Firebase integration, and real project presentation."
-          />
-
-          <div className="flex flex-wrap justify-center gap-3">
-            {defaultSkills.map((skill) => (
-              <SkillPill key={skill}>{skill}</SkillPill>
-            ))}
-          </div>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {highlights.map((item) => (
-              <div key={item.title} className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
-                <div className="mock-icon mb-5 h-16 w-16 text-primary">{item.icon}</div>
-                <h3 className="text-xl font-black text-ink">{item.title}</h3>
-                <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="container-custom">
-          <div className="rounded-[38px] bg-slate-950 px-6 py-8 text-white shadow-card md:px-10 md:py-10">
-            <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-              <div>
-                <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
-                  Live Content Management
-                </span>
-                <h2 className="mt-5 text-3xl font-black md:text-5xl">Manage your work from the admin dashboard</h2>
-                <p className="mt-5 max-w-xl leading-8 text-slate-300">
-                  Add a new project, project link, header image, screenshots, description, and technologies.
-                  You can also update your name, email, profile image, and role from the same admin dashboard.
+              <div className="mt-4 rounded-[28px] bg-white/60 backdrop-blur p-5 border">
+                <p className="text-xs font-black tracking-[0.2em] text-slate-500">
+                  STACK
                 </p>
-                <Link to="/admin" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-bold text-slate-950">
-                  Go to Admin <ArrowRight size={18} />
-                </Link>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2">
-                <MiniPanel title="Profile Settings" text="Update name, role, email, picture, and bio." />
-                <MiniPanel title="Projects" text="Add project cards with images, links, and details." />
-                <MiniPanel title="Screenshots Gallery" text="Show app UI screenshots on the project detail page." />
-                <MiniPanel title="Realtime / Demo Mode" text="Use Firebase for live data or demo mode locally without setup." />
+                <p className="mt-2 font-bold text-slate-800">
+                  Kotlin • Compose • Firebase • REST API • MVVM
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20">
+      {/* ================= SKILLS ================= */}
+      <section className="py-20 relative">
         <div className="container-custom">
+
           <SectionTitle
-            label="Featured Work"
-            title="Selected Android app projects"
-            description="Click any project to see full details, screenshots, technologies, and external app link."
+            label="Skills"
+            title="Modern Android Development Stack"
+            description="Everything used to build production-ready mobile applications."
           />
 
-          <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-            {featured.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+          {/* FLOATING SKILLS */}
+          <div className="flex flex-wrap justify-center gap-3 mt-10">
+            {defaultSkills.map((skill, i) => (
+              <span
+                key={i}
+                className="px-4 py-2 rounded-full bg-white/70 backdrop-blur border shadow-sm hover:scale-110 transition text-sm font-bold"
+              >
+                {skill}
+              </span>
             ))}
           </div>
 
-          <div className="mt-10 text-center">
-            <Link to="/projects" className="btn-dark">
-              View All Projects
+          {/* FEATURE CARDS */}
+          <div className="mt-14 grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {highlights.map((item) => (
+              <div
+                key={item.title}
+                className="group p-6 rounded-[30px] bg-white/70 backdrop-blur border shadow-sm hover:-translate-y-2 transition duration-300"
+              >
+                <div className="text-primary group-hover:scale-110 transition">
+                  {item.icon}
+                </div>
+                <h3 className="mt-4 text-xl font-black">{item.title}</h3>
+                <p className="mt-2 text-slate-600 leading-7">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= ADMIN CTA ================= */}
+      <section className="py-20">
+        <div className="container-custom">
+          <div className="rounded-[40px] p-10 bg-gradient-to-r from-black via-slate-900 to-black text-white shadow-2xl">
+
+            <h2 className="text-4xl font-black">
+              Manage Everything in One Dashboard
+            </h2>
+
+            <p className="mt-4 text-slate-300 max-w-2xl">
+              Add projects, screenshots, technologies, profile updates, and live portfolio content instantly.
+            </p>
+
+            <Link
+              to="/admin"
+              className="inline-flex mt-6 px-6 py-3 bg-white text-black rounded-full font-bold hover:scale-105 transition"
+            >
+              Open Admin →
             </Link>
           </div>
         </div>
       </section>
-    </>
+
+      {/* ================= FEATURED ================= */}
+      <section className="py-20">
+        <div className="container-custom">
+
+          <SectionTitle
+            label="Projects"
+            title="Featured Android Applications"
+            description="High-quality production apps built with modern Android architecture."
+          />
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-10">
+            {featured.map((project) => (
+              <div
+                key={project.id}
+                className="group rounded-[30px] overflow-hidden bg-white border shadow-sm hover:-translate-y-2 transition"
+              >
+                <img
+                  src={project.headerImage}
+                  className="h-52 w-full object-cover group-hover:scale-110 transition duration-500"
+                />
+
+                <div className="p-5">
+                  <h3 className="font-black text-lg">{project.title}</h3>
+                  <p className="text-sm text-slate-500">{project.category}</p>
+                  <p className="mt-3 text-slate-600 text-sm">
+                    {project.shortDescription}
+                  </p>
+
+                  <Link
+                    to="/projects"
+                    className="inline-block mt-4 text-sm font-bold text-primary"
+                  >
+                    View Details →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ================= UI COMPONENTS ================= */
+
+function GlassStat({ value, label }) {
+  return (
+    <div className="rounded-2xl bg-white/60 backdrop-blur border p-4 text-center shadow-sm hover:scale-105 transition">
+      <p className="text-2xl font-black text-black">{value}</p>
+      <p className="text-xs font-bold text-slate-500">{label}</p>
+    </div>
   );
 }
 
