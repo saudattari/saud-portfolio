@@ -51,8 +51,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!hasFirebaseConfig) {
-      const isLoggedIn = localStorage.getItem(DEMO_AUTH_KEY) === "true";
-      if (!isLoggedIn) navigate("/admin");
+      const ok = localStorage.getItem(DEMO_AUTH_KEY) === "true";
+      if (!ok) navigate("/admin");
       return;
     }
 
@@ -61,12 +61,10 @@ export default function AdminDashboard() {
     });
   }, [navigate]);
 
-  useEffect(() => {
-    setProfileForm(profile);
-  }, [profile]);
+  useEffect(() => setProfileForm(profile), [profile]);
 
   const previewScreens = useMemo(
-    () => normalizeMultiline(projectForm.screenshots),
+    () => normalize(projectForm.screenshots),
     [projectForm.screenshots]
   );
 
@@ -84,7 +82,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     setStatus("Saving profile...");
     await saveProfile(profileForm);
-    setStatus("Profile saved successfully.");
+    setStatus("Profile updated successfully.");
   }
 
   async function handleProjectSave(e) {
@@ -101,7 +99,7 @@ export default function AdminDashboard() {
   }
 
   async function handleRemove(id) {
-    if (!window.confirm("Delete this project?")) return;
+    if (!confirm("Delete this project?")) return;
     await removeProject(id);
     setStatus("Project deleted.");
   }
@@ -115,117 +113,176 @@ export default function AdminDashboard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function uploadProfilePhoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const url = await uploadFile(file, "profile");
+    setProfileForm((p) => ({ ...p, photoUrl: url }));
+    setIsUploading(false);
+  }
+
+  async function uploadHeader(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const url = await uploadFile(file, "project-headers");
+    setProjectForm((p) => ({ ...p, headerImage: url }));
+    setIsUploading(false);
+  }
+
+  async function uploadScreenshots(e) {
+    const files = Array.from(e.target.files || []);
+    setIsUploading(true);
+
+    const urls = [];
+    for (const f of files) {
+      urls.push(await uploadFile(f, "screenshots"));
+    }
+
+    setProjectForm((p) => ({
+      ...p,
+      screenshots: [...normalize(p.screenshots), ...urls].join("\n"),
+    }));
+
+    setIsUploading(false);
+  }
+
   return (
-    <section className="min-h-screen bg-slate-50 py-10 md:py-14">
-      <div className="container-custom">
+    <section className="min-h-screen bg-slate-50 py-10">
+      <div className="container-custom space-y-8">
 
         {/* HEADER */}
-        <div className="mb-8 flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">
-              Admin Dashboard
+            <p className="text-xs font-bold tracking-[0.25em] text-indigo-600">
+              ADMIN PANEL
             </p>
-            <h1 className="mt-1 text-3xl font-black text-slate-900">
-              Manage Portfolio
+            <h1 className="text-3xl font-black text-slate-900">
+              Portfolio Dashboard
             </h1>
+            <p className="text-sm text-slate-500">
+              Manage profile, projects, and content
+            </p>
           </div>
 
           <button
             onClick={logout}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
-            <LogOut size={16} /> Logout
+            <LogOut size={16} />
+            Logout
           </button>
         </div>
 
         {/* STATUS */}
-        {status && (
-          <p className="mb-4 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            {status}
-          </p>
+        {(status || error || isUploading) && (
+          <div className="space-y-2">
+            {status && (
+              <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                {status}
+              </p>
+            )}
+            {error && (
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                {error}
+              </p>
+            )}
+            {isUploading && (
+              <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Uploading image...
+              </p>
+            )}
+          </div>
         )}
 
-        {error && (
-          <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {/* TOP INFO CARDS */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Info title="Mode" value={hasFirebaseConfig ? "Firebase" : "Demo"} />
+          <Info title="Storage" value={hasCloudinaryConfig ? "Cloudinary" : "Local"} />
+          <Info title="Email" value={demoAdmin.email} />
+          <Info title="Password" value={demoAdmin.password} />
+        </div>
 
-        {/* GRID FOR FORMS */}
+        {/* MAIN GRID */}
         <div className="grid gap-8 xl:grid-cols-2">
 
           {/* PROFILE */}
-          <Card title="Profile Settings" icon={<UserRound size={18} />}>
-            <FormGroup>
+          <Panel title="Profile Settings" icon={<UserRound size={18} />}>
+            <div className="grid gap-4">
               <Input label="Name" value={profileForm.name} onChange={(v) => setProfileForm({ ...profileForm, name: v })} />
               <Input label="Role" value={profileForm.role} onChange={(v) => setProfileForm({ ...profileForm, role: v })} />
               <Input label="Email" value={profileForm.email} onChange={(v) => setProfileForm({ ...profileForm, email: v })} />
               <Input label="Photo URL" value={profileForm.photoUrl} onChange={(v) => setProfileForm({ ...profileForm, photoUrl: v })} />
-            </FormGroup>
 
-            <button className="mt-6 w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+              <File upload="Upload Photo" onChange={uploadProfilePhoto} />
+
+              <textarea
+                className="input"
+                rows={4}
+                value={profileForm.description}
+                onChange={(e) =>
+                  setProfileForm({ ...profileForm, description: e.target.value })
+                }
+                placeholder="Bio"
+              />
+            </div>
+
+            <button className="btn-primary mt-6">
               <Save size={16} /> Save Profile
             </button>
-          </Card>
+          </Panel>
 
           {/* PROJECT */}
-          <Card title="Project Editor" icon={<PencilLine size={18} />}>
-            <FormGroup>
+          <Panel title="Project Editor" icon={<PencilLine size={18} />}>
+            <div className="grid gap-4">
               <Input label="Title" value={projectForm.title} onChange={(v) => setProjectForm({ ...projectForm, title: v })} />
               <Input label="Category" value={projectForm.category} onChange={(v) => setProjectForm({ ...projectForm, category: v })} />
               <Input label="Link" value={projectForm.appLink} onChange={(v) => setProjectForm({ ...projectForm, appLink: v })} />
-            </FormGroup>
 
-            <textarea
-              className="mt-4 w-full rounded-xl border border-slate-200 p-3 text-sm focus:ring-4 focus:ring-indigo-100"
-              rows={4}
-              placeholder="Short Description"
-              value={projectForm.shortDescription}
-              onChange={(e) =>
-                setProjectForm({ ...projectForm, shortDescription: e.target.value })
-              }
-            />
+              <textarea
+                className="input"
+                rows={3}
+                value={projectForm.shortDescription}
+                onChange={(e) =>
+                  setProjectForm({ ...projectForm, shortDescription: e.target.value })
+                }
+                placeholder="Short description"
+              />
 
-            <button className="mt-6 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700">
+              <File upload="Header Image" onChange={uploadHeader} />
+              <File upload="Screenshots" multiple onChange={uploadScreenshots} />
+            </div>
+
+            <button className="btn-dark mt-6">
               <Plus size={16} /> Save Project
             </button>
-          </Card>
+          </Panel>
         </div>
 
         {/* PROJECT LIST */}
-        <div className="mt-10">
-          <h2 className="mb-6 text-xl font-bold text-slate-900">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">
             Existing Projects
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {projects.map((p) => (
               <div
                 key={p.id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden"
               >
-                <img
-                  src={p.headerImage}
-                  className="h-40 w-full object-cover"
-                  alt=""
-                />
+                <img src={p.headerImage} className="h-40 w-full object-cover" />
 
                 <div className="p-4">
-                  <h3 className="font-bold text-slate-900">{p.title}</h3>
+                  <h3 className="font-bold">{p.title}</h3>
                   <p className="text-sm text-slate-500">{p.category}</p>
 
                   <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => handleEdit(p)}
-                      className="rounded-lg border px-3 py-1 text-xs font-semibold hover:bg-slate-50"
-                    >
+                    <button onClick={() => handleEdit(p)} className="btn-outline text-xs">
                       Edit
                     </button>
-
-                    <button
-                      onClick={() => handleRemove(p.id)}
-                      className="rounded-lg bg-red-50 px-3 py-1 text-xs font-semibold text-red-600"
-                    >
+                    <button onClick={() => handleRemove(p.id)} className="btn-danger text-xs">
                       Delete
                     </button>
                   </div>
@@ -240,22 +297,26 @@ export default function AdminDashboard() {
   );
 }
 
-/* ===== UI COMPONENTS ===== */
+/* ================= UI COMPONENTS ================= */
 
-function Card({ title, icon, children }) {
+function Panel({ title, icon, children }) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center gap-2 text-slate-900">
-        {icon}
-        <h3 className="font-bold">{title}</h3>
+      <div className="mb-4 flex items-center gap-2 font-bold text-slate-900">
+        {icon} {title}
       </div>
       {children}
     </div>
   );
 }
 
-function FormGroup({ children }) {
-  return <div className="space-y-4">{children}</div>;
+function Info({ title, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
+      <p className="text-xs font-bold text-slate-500">{title}</p>
+      <p className="mt-1 font-bold text-slate-900">{value}</p>
+    </div>
+  );
 }
 
 function Input({ label, value, onChange }) {
@@ -263,15 +324,25 @@ function Input({ label, value, onChange }) {
     <div>
       <label className="text-sm font-medium text-slate-700">{label}</label>
       <input
+        className="input"
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:ring-4 focus:ring-indigo-100"
       />
     </div>
   );
 }
 
-function normalizeMultiline(v) {
+function File({ upload, onChange, multiple }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-600">
+      <UploadCloud size={16} />
+      {upload}
+      <input type="file" multiple={multiple} className="hidden" onChange={onChange} />
+    </label>
+  );
+}
+
+function normalize(v) {
   return String(v || "")
     .split("\n")
     .map((x) => x.trim())
