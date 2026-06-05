@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail, Smartphone, Sparkles } from "lucide-react";
+import { ArrowUpRight, Mail, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProfile } from "../utils/useSiteData";
 
@@ -7,65 +7,102 @@ export default function Footer() {
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white">
-      <div className="container-custom py-16">
-        <div className="grid gap-10 rounded-[34px] bg-slate-950 px-6 py-8 text-white shadow-card md:grid-cols-[1.15fr_0.85fr_0.8fr] md:px-10 md:py-10">
+      <div className="container-custom py-12 md:py-14">
+
+        {/* MAIN GRID */}
+        <div className="grid gap-10 md:grid-cols-3">
+
+          {/* BRAND */}
           <div>
-            <div className="mb-5 flex items-center gap-3">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-cyan-300">
-                <Sparkles size={22} />
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <Sparkles size={20} />
               </div>
+
               <div>
-                <p className="text-xl font-black">Mohammad Saud</p>
-                <p className="text-sm text-slate-300">Modern Android App Developer</p>
+                <p className="text-lg font-black text-slate-900">
+                  Mohammad Saud
+                </p>
+                <p className="text-sm text-slate-500">
+                  Android Developer
+                </p>
               </div>
             </div>
-            <p className="max-w-xl leading-7 text-slate-300">
-              I design and build premium Android apps with Kotlin, XML, Jetpack Compose,
-              Firebase, APIs, Room, and scalable architecture.
+
+            <p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">
+              Building clean, scalable Android apps using Kotlin, Jetpack Compose,
+              Firebase, and modern architecture patterns.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link to="/projects" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-slate-950">
-                View Portfolio <ArrowUpRight size={16} />
+
+            <div className="mt-5 flex gap-3">
+              <Link
+                to="/projects"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Portfolio <ArrowUpRight size={16} />
               </Link>
-              <Link to="/admin" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 font-bold text-white">
-                Open Admin
+
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Admin
               </Link>
             </div>
           </div>
 
+          {/* LINKS */}
           <div>
-            <h4 className="text-lg font-black">Quick Links</h4>
-            <div className="mt-5 grid gap-3 text-sm text-slate-300">
-              <Link to="/about">About</Link>
-              <Link to="/projects">Projects</Link>
-              <Link to="/services">Services</Link>
-              <Link to="/contact">Contact</Link>
+            <h4 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+              Navigation
+            </h4>
+
+            <div className="mt-4 flex flex-col gap-3 text-sm">
+              <Link className="text-slate-600 hover:text-slate-900" to="/about">
+                About
+              </Link>
+              <Link className="text-slate-600 hover:text-slate-900" to="/projects">
+                Projects
+              </Link>
+              <Link className="text-slate-600 hover:text-slate-900" to="/services">
+                Services
+              </Link>
+              <Link className="text-slate-600 hover:text-slate-900" to="/contact">
+                Contact
+              </Link>
             </div>
           </div>
 
+          {/* CONTACT */}
           <div>
-            <h4 className="text-lg font-black">Contact</h4>
-            <a href={`mailto:${profile.email}`} className="mt-5 flex items-center gap-3 text-sm text-slate-300">
-              <Mail size={18} />
+            <h4 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+              Contact
+            </h4>
+
+            <a
+              href={`mailto:${profile.email}`}
+              className="mt-4 flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
+            >
+              <Mail size={16} />
               {profile.email}
             </a>
-            <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400/20 text-cyan-300">
-                  <Smartphone size={20} />
-                </div>
-                <div>
-                  <p className="font-bold">Android Portfolio</p>
-                  <p className="text-xs text-slate-400">Admin + Realtime project showcase</p>
-                </div>
-              </div>
-            </div>
+
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Available for freelance Android development & UI/UX implementation.
+            </p>
           </div>
         </div>
 
-        <p className="py-6 text-center text-sm text-slate-500">
-          © {new Date().getFullYear()} Mohammad Saud. Built for modern Android app showcasing.
-        </p>
+        {/* BOTTOM BAR */}
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-6 text-center md:flex-row md:text-left">
+          <p className="text-xs text-slate-500">
+            © {new Date().getFullYear()} Mohammad Saud. All rights reserved.
+          </p>
+
+          <p className="text-xs text-slate-400">
+            Built with React + Tailwind CSS
+          </p>
+        </div>
       </div>
     </footer>
   );

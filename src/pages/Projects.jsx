@@ -10,13 +10,16 @@ export default function Projects() {
       <div className="container-custom">
         <SectionTitle
           label="Portfolio"
-          title="Android application projects"
+          title="Android Application Projects"
           description="Each project includes a proper header visual, technologies, app description, and a separate screenshots gallery page."
         />
 
-        <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid items-stretch gap-7 md:grid-cols-2 xl:grid-cols-3">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+            />
           ))}
         </div>
       </div>

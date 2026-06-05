@@ -1,57 +1,94 @@
-import { Bug, CloudCog, Code2, Rocket, Smartphone, WandSparkles } from "lucide-react";
+import {
+  Bug,
+  CloudCog,
+  Code2,
+  Rocket,
+  Smartphone,
+  WandSparkles,
+} from "lucide-react";
 import SectionTitle from "../components/SectionTitle";
 
 const services = [
   {
-    icon: <Smartphone size={24} />,
+    icon: Smartphone,
     title: "Android App Development",
-    description: "Full Android application development using Kotlin, XML, Jetpack Compose, Material UI, Firebase, and scalable architecture."
+    description:
+      "Full Android development using Kotlin, Jetpack Compose, XML, Firebase, and scalable architecture patterns.",
   },
   {
-    icon: <Code2 size={24} />,
+    icon: Code2,
     title: "API Integration",
-    description: "Connect Android apps with REST APIs, authentication, JSON data, Retrofit networking, and production-ready handling."
+    description:
+      "REST API integration with Retrofit, authentication flows, JSON parsing, and production-ready error handling.",
   },
   {
-    icon: <WandSparkles size={24} />,
+    icon: WandSparkles,
     title: "Modern UI Implementation",
-    description: "Beautiful UI screens with proper layout structure, reusable components, and premium visual quality."
+    description:
+      "Clean, reusable UI components with Material Design principles and polished user experience.",
   },
   {
-    icon: <CloudCog size={24} />,
+    icon: CloudCog,
     title: "Firebase Integration",
-    description: "Firebase Authentication, Firestore, Realtime updates, Storage, and cloud-backed app workflows."
+    description:
+      "Authentication, Firestore, Storage, real-time sync, and backend cloud workflows.",
   },
   {
-    icon: <Bug size={24} />,
-    title: "Bug Fixing & Refactoring",
-    description: "Fix crashes, improve code quality, optimize architecture, and refactor Android features properly."
+    icon: Bug,
+    title: "Bug Fixing & Optimization",
+    description:
+      "Fix crashes, improve performance, refactor architecture, and optimize Android apps.",
   },
   {
-    icon: <Rocket size={24} />,
-    title: "Launch & Deployment Support",
-    description: "Help with Play Console preparation, release builds, store readiness, and app publishing guidance."
-  }
+    icon: Rocket,
+    title: "Launch & Deployment",
+    description:
+      "Play Store publishing, release builds, signing, and production deployment support.",
+  },
 ];
 
 export default function Services() {
   return (
-    <section className="py-20">
+    <section className="relative py-20 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="container-custom">
+
         <SectionTitle
           label="Services"
           title="What I can build for you"
-          description="From idea to publish-ready Android application, I can help with development, design implementation, integration, and improvement."
+          description="End-to-end Android development services from idea to production-ready apps."
         />
 
-        <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-          {services.map((item) => (
-            <div key={item.title} className="rounded-[30px] border border-slate-200 bg-white p-7 shadow-soft">
-              <div className="mock-icon mb-5 h-16 w-16 text-primary">{item.icon}</div>
-              <h3 className="text-2xl font-black text-ink">{item.title}</h3>
-              <p className="mt-4 leading-7 text-slate-600">{item.description}</p>
-            </div>
-          ))}
+        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+          {services.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.title}
+                className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                {/* ICON */}
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100">
+                    <Icon size={22} />
+                  </div>
+
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {item.title}
+                  </h3>
+                </div>
+
+                {/* DESCRIPTION */}
+                <p className="mt-4 flex-1 text-sm leading-6 text-slate-600">
+                  {item.description}
+                </p>
+
+                {/* subtle bottom line accent */}
+                <div className="mt-6 h-[2px] w-10 rounded-full bg-slate-100 transition group-hover:w-16 group-hover:bg-indigo-200" />
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

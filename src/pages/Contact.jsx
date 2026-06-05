@@ -5,112 +5,192 @@ import { useProfile } from "../utils/useSiteData";
 
 function encode(data) {
   return Object.keys(data)
-    .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+    .map(
+      (key) =>
+        encodeURIComponent(key) + "=" + encodeURIComponent(data[key])
+    )
     .join("&");
 }
 
 export default function Contact() {
   const profile = useProfile();
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
-    setStatus("Sending...");
+    setStatus("");
+    setLoading(true);
+
     try {
       await fetch("/", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encode({ "form-name": "contact", ...form })
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: encode({ "form-name": "contact", ...form }),
       });
-      setStatus("Message submitted successfully. On Netlify, you can view it in Forms.");
+
+      setStatus("Message sent successfully.");
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
-      setStatus("Message failed. Please use direct email.");
+      setStatus("Failed to send message. Please email directly.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <section className="py-20">
+    <section className="relative py-20 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="container-custom">
+
         <SectionTitle
           label="Contact"
           title="Let’s build your Android app"
-          description={`The visible contact email is ${profile.email}. Form notifications can be sent to ${profile.formReceiver} after Netlify setup.`}
+          description={`Reach me directly at ${profile.email}`}
         />
 
-        <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr]">
-          <div className="rounded-[36px] bg-slate-950 p-8 text-white shadow-card md:p-10">
-            <h3 className="text-3xl font-black">Need an Android developer?</h3>
-            <p className="mt-5 leading-8 text-slate-300">
-              I can help with Android app development, Jetpack Compose, XML UI,
-              Firebase, API integration, app improvement, and bug fixing.
-            </p>
+        <div className="mt-10 grid gap-10 lg:grid-cols-2">
 
-            <a href={`mailto:${profile.email}`} className="mt-8 flex items-center gap-3 rounded-[24px] bg-white/8 p-4 font-bold text-white">
-              <Mail size={20} /> {profile.email}
-            </a>
+          {/* LEFT INFO PANEL */}
+          <div className="space-y-6">
 
-            <div className="mt-6 rounded-[24px] border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center gap-3 text-cyan-300">
-                <ShieldCheck size={20} />
-                <p className="font-bold">Netlify Form Note</p>
+            {/* MAIN CARD */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <h3 className="text-2xl font-black text-slate-900">
+                Work with me
+              </h3>
+
+              <p className="mt-4 text-sm leading-7 text-slate-600">
+                Android development services including Jetpack Compose UI,
+                Firebase integration, API development, and app optimization.
+              </p>
+
+              <a
+                href={`mailto:${profile.email}`}
+                className="mt-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                <Mail size={18} />
+                {profile.email}
+              </a>
+            </div>
+
+            {/* INFO BOX */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm shadow-sm">
+              <div className="flex items-center gap-2 text-indigo-600">
+                <ShieldCheck size={18} />
+                <p className="font-semibold">Form handling</p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                After deployment, open Netlify → Forms → Notifications and add
-                <span className="font-bold text-white"> {profile.formReceiver}</span> as the email notification receiver.
+
+              <p className="mt-3 text-slate-600 leading-6">
+                Messages are handled via Netlify Forms. After deployment,
+                enable email notifications in your Netlify dashboard.
               </p>
             </div>
+
           </div>
 
-          <form
-            name="contact"
-            method="POST"
-            data-netlify="true"
-            onSubmit={submit}
-            className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-soft md:p-10"
-          >
-            <input type="hidden" name="form-name" value="contact" />
-            <div className="grid gap-5">
-              <Field label="Your Name" name="name" value={form.name} onChange={setForm} />
-              <Field label="Your Email" name="email" type="email" value={form.email} onChange={setForm} />
-              <Field label="Subject" name="subject" value={form.subject} onChange={setForm} />
-              <label className="grid gap-2 text-sm font-bold text-slate-700">
-                Message
+          {/* RIGHT FORM */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
+
+            <h3 className="text-xl font-bold text-slate-900">
+              Send a message
+            </h3>
+
+            <p className="mt-2 text-sm text-slate-500">
+              I usually respond within 24–48 hours.
+            </p>
+
+            <form
+              name="contact"
+              method="POST"
+              data-netlify="true"
+              onSubmit={submit}
+              className="mt-8 space-y-5"
+            >
+              <input type="hidden" name="form-name" value="contact" />
+
+              <Input
+                label="Your Name"
+                value={form.name}
+                onChange={(v) => setForm({ ...form, name: v })}
+              />
+
+              <Input
+                label="Your Email"
+                type="email"
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+              />
+
+              <Input
+                label="Subject"
+                value={form.subject}
+                onChange={(v) => setForm({ ...form, subject: v })}
+              />
+
+              <div>
+                <label className="text-sm font-medium text-slate-700">
+                  Message
+                </label>
+
                 <textarea
-                  name="message"
+                  rows="5"
                   value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  rows="6"
-                  required
-                  className="admin-textarea"
+                  onChange={(e) =>
+                    setForm({ ...form, message: e.target.value })
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
                   placeholder="Tell me about your project..."
+                  required
                 />
-              </label>
-              <button className="btn-primary w-fit" type="submit">
-                <Send size={18} /> Submit Message
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:opacity-60"
+              >
+                <Send size={18} />
+                {loading ? "Sending..." : "Send Message"}
               </button>
-              {status && <p className="text-sm font-bold text-slate-600">{status}</p>}
-            </div>
-          </form>
+
+              {status && (
+                <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  {status}
+                </p>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function Field({ label, name, value, onChange, type = "text" }) {
+/* INPUT COMPONENT */
+function Input({ label, value, onChange, type = "text" }) {
   return (
-    <label className="grid gap-2 text-sm font-bold text-slate-700">
-      {label}
+    <div>
+      <label className="text-sm font-medium text-slate-700">
+        {label}
+      </label>
+
       <input
-        required
         type={type}
-        name={name}
         value={value}
-        onChange={(e) => onChange((prev) => ({ ...prev, [name]: e.target.value }))}
-        className="admin-input"
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+        required
       />
-    </label>
+    </div>
   );
 }
