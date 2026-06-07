@@ -98,10 +98,10 @@ export default function Footer() {
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} Mohammad Saud. All rights reserved.
           </p>
-
+{/* 
           <p className="text-xs text-slate-400">
             Built with React + Tailwind CSS
-          </p>
+          </p> */}
         </div>
       </div>
     </footer>
